@@ -4,25 +4,28 @@ Shareable skills for Claude Code. Built by Ramy Barsoum.
 
 ## Install
 
-**All skills:**
+One command. Installs the skill, configures hooks, done.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ramybarsoum/claude-skills/main/install.sh | bash
 ```
 
-**One skill:**
+That's it. Restart Claude Code and type `/feature-spec-interview`.
+
+**What the installer does:**
+1. Downloads skill files to `~/.claude/skills/`
+2. Registers the suggestion hook in `~/.claude/hooks.json` (auto-suggests the skill when you say "write a spec")
+3. Makes hook scripts executable
+
+**Other commands:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ramybarsoum/claude-skills/main/install.sh | bash -s -- feature-spec-interview
-```
-
-**Check for updates:**
-
-```bash
+# Check for updates
 curl -fsSL https://raw.githubusercontent.com/ramybarsoum/claude-skills/main/install.sh | bash -s -- --check
-```
 
-Skills install to `~/.claude/skills/`. Restart Claude Code after installing.
+# Uninstall (removes skill + hook)
+curl -fsSL https://raw.githubusercontent.com/ramybarsoum/claude-skills/main/install.sh | bash -s -- --uninstall
+```
 
 ## Available Skills
 
