@@ -1,6 +1,6 @@
 ---
 name: feature-spec-interview
-description: "Interactive interview that produces AI-agent-executable feature specifications (NLSpec). Use when the user says 'write a feature spec', 'spec interview', 'dark factory spec', 'NLSpec', 'feature-spec-interview', or needs to create detailed behavioral contracts for any feature, pipeline step, or system component. Supports two modes: (1) Solo mode where one person handles both product and engineering decisions, (2) Split mode where PM writes behavioral contracts and Engineering fills technology decisions. Always uses AskUserQuestion for interactive interviewing. Produces specs precise enough that an AI agent or capable new hire could implement with at most one clarifying question."
+description: "Interactive interview that produces AI-agent-executable feature specifications (NLSpec). Use when the user says 'write a feature spec', 'spec interview', 'dark factory spec', 'NLSpec', 'feature-spec-interview', or needs to create detailed behavioral contracts for any feature, pipeline step, or system component. Supports four modes: (1) All mode where one person covers product + engineering, (2) PM-first mode where PM writes behavioral spec and Eng fills tech later, (3) Eng-first mode where engineer fills tech decisions on an existing spec, (4) Fill-gaps mode to complete a partially-written spec. Always uses AskUserQuestion for interactive interviewing. Produces specs precise enough that an AI agent or capable new hire could implement with at most one clarifying question."
 ---
 
 # Feature Spec Interview
@@ -9,35 +9,45 @@ Interactive interview process that produces AI-agent-executable feature specific
 
 ## Core Principle
 
-Specs are behavioral contracts for AI agents, not delivery plans for humans. Every behavior requires three components: WHAT the system must do, WHEN (under what conditions), and WHY (the rationale that guides edge case decisions). Constraints are measurable invariants, not policy statements.
+Specs are behavioral contracts for AI agents, not delivery plans for humans. Every behavior requires four components: WHAT the system must do, WHEN (under what conditions), WHY (the rationale that guides edge case decisions), and VERIFY (how to confirm the behavior is correct in production). Constraints are measurable invariants, not policy statements.
 
 ## References
 
-- **Question banks**: See [references/question-banks.md](references/question-banks.md) for all interview questions organized by prompt level
+- **Question banks (behavioral)**: See [references/question-banks.md](references/question-banks.md) for Prompts 1-3 interview questions (behavioral contracts)
+- **Question banks (production bridge)**: See [references/production-bridge-questions.md](references/production-bridge-questions.md) for Prompts 5-9 interview questions (production readiness)
 - **Spec templates**: See [references/spec-templates.md](references/spec-templates.md) for 7-section and 14-section output formats plus NLSpec writing rules
-- **Completeness audit**: See [references/completeness-audit.md](references/completeness-audit.md) for the 4-phase verification checklist
+- **Completeness audit**: See [references/completeness-audit.md](references/completeness-audit.md) for the 5-phase verification checklist
+- **Question banks (MECE gaps)**: See [references/mece-gap-questions.md](references/mece-gap-questions.md) for Prompt 10 interview questions (comprehensive coverage Groups 31-40)
 
 ## Workflow Overview
 
 ```
-Phase 0: Setup        → Mode selection, project intake, step identification
-Phase 1: Interview    → Progressive question groups via AskUserQuestion
-Phase 2: Draft        → Generate spec using appropriate template
-Phase 3: Review       → User reviews draft, corrections applied
-Phase 4: Audit        → Completeness audit + gap detection
-Phase 5: Finalize     → Production-ready spec with audit report
+Phase 0:  Setup                  → Mode selection, project intake, step identification
+Phase 1a: Behavioral Interview   → Prompts 1-3 via AskUserQuestion (behavioral contracts)
+Phase 1b: Production Bridge      → Prompts 5-9 via AskUserQuestion (production readiness)
+Phase 1c: Comprehensive Coverage → Prompt 10 via AskUserQuestion (MECE gap closure)
+Phase 2:  Draft                  → Generate spec using appropriate template
+Phase 3:  Review                 → User reviews draft, corrections applied
+Phase 4:  Audit                  → Completeness audit + gap detection + production bridge audit
+Phase 5:  Finalize               → Production-ready spec with audit report
 ```
 
 ---
 
 ## Phase 0: Setup
 
-### Step 0.1 — Determine Mode
+### Step 0.1 — Determine Interview Mode
 
-Use AskUserQuestion to ask:
-- "Are you writing this spec solo (handling both product and engineering decisions), or split between PM and Engineering?"
-  - **Solo**: One person makes all decisions. [OPEN] items are marked `[OPEN]` with a note on what's needed.
-  - **Split**: PM writes behavioral contracts. Engineering fills technology decisions. [OPEN] items are marked `[OPEN — Engineering]`.
+Use AskUserQuestion to ask: **"What's your role in this interview?"**
+
+| Mode | When to Use | Behavior |
+|------|-------------|----------|
+| **All** | One person covers product + engineering | Ask all `[PM]`, `[ENG]`, and `[BOTH]` questions. Mark undecided items `[OPEN]`. |
+| **PM-first** | PM writes behavioral spec, Eng fills tech later | Ask `[PM]` and `[BOTH]` questions. Skip `[ENG]` questions. Mark skipped items `[OPEN — Engineering]`. |
+| **Eng-first** | Engineer fills tech decisions on an existing spec | Ask `[ENG]` and `[BOTH]` questions. Skip `[PM]` questions. Mark skipped items `[OPEN — PM]`. |
+| **Fill-gaps** | Complete a partially-written spec | Load existing spec. Show only `[OPEN]` items. User answers the unanswered questions. |
+
+**Mode selection shortcut:** If the user says "solo" or "I'm doing everything," map to **All**. If they say "I'm the PM" or "product side," map to **PM-first**. If they say "engineering" or "tech decisions," map to **Eng-first**. If they reference an existing spec with gaps, map to **Fill-gaps**.
 
 ### Step 0.2 — Project Intake (first spec only)
 
@@ -61,6 +71,46 @@ Based on the answer, determine:
 - **Judgment step** (AI makes decisions) → Use Prompts 1+2+3 → 14-section format
 
 If the user uploaded or referenced an existing document (PRD, feature doc, requirements), read it first. Extract what you can, then interview to fill gaps. Never generate a spec purely from a document without interviewing.
+
+### Mode Filtering Rules
+
+Every question group in the question banks has a tag: `[PM]`, `[ENG]`, or `[BOTH]`.
+
+**During the interview:**
+- **All mode**: Ask every question group regardless of tag.
+- **PM-first mode**: Ask groups tagged `[PM]` or `[BOTH]`. For `[ENG]` groups, generate placeholder `[OPEN — Engineering]` items in the spec draft with a one-sentence description of what the engineer needs to decide.
+- **Eng-first mode**: Ask groups tagged `[ENG]` or `[BOTH]`. For `[PM]` groups, generate placeholder `[OPEN — PM]` items in the spec draft.
+- **Fill-gaps mode**: Parse the existing spec for `[OPEN]` markers. Present each as an interview question. After answering, remove the `[OPEN]` marker and write the answer into the spec.
+
+**Tag reference (Groups 1-30):**
+
+| Group | Tag | Group | Tag |
+|-------|-----|-------|-----|
+| 1 Desired Output | PM | 16 Load Behavior | ENG |
+| 2 Hard Constraints | BOTH | 17 Scenario Design | PM |
+| 3 Hidden Context | BOTH | 18 Satisfaction Definition | PM |
+| 4 Edge Cases | BOTH | 19 Holdout & Regression | ENG |
+| 5 Tradeoffs | PM | 20 Dependency Inventory | BOTH |
+| 6 Definition of Done | PM | 21 Failure Mode Replication | ENG |
+| 7 Core Value | PM | 22 Behavioral Fidelity | ENG |
+| 8 Decision Authority | PM | 23 Volume & Rate Testing | ENG |
+| 9 Quality Thresholds | PM | 24 Schema Definition | BOTH |
+| 10 Special Handling | PM | 25 Contract Enforcement | ENG |
+| 11 Pushback | BOTH | 26 Versioning & Evolution | ENG |
+| 12 Failure Mode Extraction | BOTH | 27 Continuous Monitoring | ENG |
+| 13 Latency & Throughput | ENG | 28 Alerting & Invariants | ENG |
+| 14 Resource Constraints | BOTH | 29 Drift Detection | BOTH |
+| 15 Availability & Degradation | ENG | 30 Model Assignment | BOTH |
+
+**Tag reference (Groups 31-40, Prompt 10 — MECE Gaps):**
+
+| Group | Tag | Group | Tag |
+|-------|-----|-------|-----|
+| 31 Security & Audit | PM | 36 Operational Readiness | ENG |
+| 32 Data Lifecycle | PM | 37 Chaos Engineering | ENG |
+| 33 Cross-Step Coordination | BOTH | 38 Deprecation & Migration | BOTH |
+| 34 Gradual Rollout | PM | 39 Documentation | ENG |
+| 35 Incident Response | ENG | 40 Data Quality | ENG |
 
 ---
 
@@ -105,6 +155,114 @@ Keep the constraint only if removing it would cause real harm or a compliance vi
 **The Klarna Test**: Before finalizing any classification or routing rule, ask: "Am I optimizing for the label/rule, or for the action it triggers?"
 
 **No skipping**: Do not skip Groups 3 (Hidden Context) and 5 (Tradeoffs). These produce the most valuable spec content and are the groups most often rushed.
+
+### Rejected Patterns (Decision 4, March 10 2026)
+
+The following patterns were evaluated during framework research and explicitly rejected. Do NOT re-introduce them during interviews or spec writing. Build later only when evidence demands it.
+
+- **Three-tier knowledge architecture** (Codified Context paper). Overkill for current scale. Simple CLAUDE.md + spec files are sufficient.
+- **11-dimension delegation assessment** (Intelligent AI Delegation paper). Too granular. The 3-tier Decision Authority Map (autonomous / notify / escalate) covers AllCare's needs.
+- **Attestation chains**. No current compliance requirement demands cryptographic proof of agent actions. HIPAA audit logging is sufficient.
+- **Formal drift detector** (autonomous component). Rejected as a standalone agent. Drift is monitored as an observability practice (Prompt 9), not as a formal autonomous component that auto-corrects.
+- **Formal deployment gate**. GSD's verify-work + completeness audit is the gate. No separate deploy ceremony needed.
+- **Intra-plan compaction**. Premature optimization. Plans are short enough that context compression isn't needed yet.
+- **Three-metric satisfaction signal**. Replaced by probabilistic satisfaction scoring (Prompt 6). Single blended score with per-step thresholds.
+
+---
+
+## Phase 1b: Production Bridge Interview
+
+**CRITICAL: Only run after Phase 1a (behavioral interview) is complete.** These prompts bridge the spec from "behaviorally correct" to "production-ready."
+
+Load [references/production-bridge-questions.md](references/production-bridge-questions.md) for the full production bridge question bank.
+
+### Applicability Check
+
+Not every step needs all 5 production bridge prompts. Before starting, determine which apply:
+
+| Prompt | Apply When | Skip When |
+|--------|------------|-----------|
+| 5 - NFRs | Step handles live traffic | Pure data transformation, no latency sensitivity |
+| 6 - Scenarios | Step has acceptance criteria to validate | Step has < 3 acceptance criteria |
+| 7 - DTU | Step talks to external dependencies | Step is purely internal |
+| 8 - Data Contracts | Step passes data to another step | Step is terminal (no downstream consumer) |
+| 9 - Observability | Step runs continuously in production | One-time migration or batch job |
+
+### Interview Flow
+
+**Prompt 5 — Non-Functional Requirements (Groups 13-16):**
+
+13. **Group 13 — Latency & Throughput**: P99 targets, concurrent request limits, batch vs real-time.
+14. **Group 14 — Resource Constraints**: Token budgets, cost ceilings, memory/CPU limits.
+15. **Group 15 — Availability & Degradation**: Uptime targets, circuit breakers, graceful degradation.
+16. **Group 16 — Load Behavior**: 10x load handling, shed/queue/reject policy, cold start.
+
+**Prompt 6 — Scenarios & Satisfaction (Groups 17-19):**
+
+17. **Group 17 — Scenario Design**: Real user stories, scenario diversity, independence.
+18. **Group 18 — Satisfaction Definition**: Probabilistic scoring, per-step thresholds, gaming detection.
+19. **Group 19 — Holdout & Regression**: Holdout strategy, bounded feedback templates, regression detection.
+
+**Prompt 7 — Digital Twin Universe (Groups 20-23):**
+
+20. **Group 20 — Dependency Inventory**: External systems, read/write patterns, existing sandboxes.
+21. **Group 21 — Failure Mode Replication**: Production incidents, which failures to replicate.
+22. **Group 22 — Behavioral Fidelity**: Response fidelity level, state management needs.
+23. **Group 23 — Volume & Rate Testing**: Call volume, burst patterns, latency distributions.
+
+**Prompt 8 — Inter-Step Data Contracts (Groups 24-26):**
+
+24. **Group 24 — Schema Definition**: Exact fields, types, required/optional, naming conventions.
+25. **Group 25 — Contract Enforcement**: Missing field handling, type validation, defense-in-depth.
+26. **Group 26 — Versioning & Evolution**: Version strategy, backward compatibility, migration paths.
+
+**Prompt 9 — Observability & Model Selection (Groups 27-30):**
+
+27. **Group 27 — Continuous Monitoring**: Which criteria to monitor, dashboards, sampling rates.
+28. **Group 28 — Alerting & Invariants**: Alert definitions, severity levels, runbooks, false positive tolerance.
+29. **Group 29 — Drift Detection**: Input/output drift signals, thresholds, feedback loop to spec.
+30. **Group 30 — Model Assignment**: Per-step model selection, consensus for critical decisions, fallback chain.
+
+### Production Bridge Discipline
+
+**The Measurement Principle**: When the user provides an NFR (latency target, availability %, throughput number), always ask: "Has this been measured in production, or is it a guess?" Keep only NFRs backed by measurement or explicit SLA requirements. Cut speculative ones.
+
+**The 3am Test**: For every alert proposed in Prompt 9, ask: "If this alert fired at 3am, would someone actually get out of bed?" If not, downgrade it to a weekly report.
+
+After completing applicable production bridge prompts, ask the post-production-bridge review questions from the question bank.
+
+---
+
+## Phase 1c: Comprehensive Coverage Interview
+
+**Run after Phase 1b (production bridge) is complete.** These prompts close the remaining MECE gaps in the spec.
+
+Load [references/mece-gap-questions.md](references/mece-gap-questions.md) for the full MECE gap question bank.
+
+### Applicability Check
+
+Check the applicability table in the MECE gap question bank. Most steps need at least Groups 31-32 (security and data lifecycle). The rest depend on step characteristics.
+
+### Interview Flow
+
+**Prompt 10 — Comprehensive Coverage (Groups 31-40):**
+
+31. **Group 31 — Security & Audit** `[PM]`: Access control, audit logging, PHI/PII handling
+32. **Group 32 — Data Lifecycle** `[PM]`: Retention, deletion, archival, right-to-deletion
+33. **Group 33 — Cross-Step Coordination** `[BOTH]`: Side effects, race conditions, compensation
+34. **Group 34 — Gradual Rollout** `[PM]`: Rollout stages, gating metrics, rollback triggers
+35. **Group 35 — Incident Response** `[ENG]`: Runbooks, diagnostic steps, post-incident spec updates
+36. **Group 36 — Operational Readiness** `[ENG]`: On-call, training, handoff procedures
+37. **Group 37 — Chaos Engineering** `[ENG]`: Fault injection, blast radius, success criteria
+38. **Group 38 — Deprecation & Migration** `[BOTH]`: Lifespan, consumer migration, backward compatibility
+39. **Group 39 — Documentation** `[ENG]`: Operational docs, freshness policy, onboarding
+40. **Group 40 — Data Quality** `[ENG]`: Quality dimensions, thresholds, responsibility boundaries
+
+**Also includes:** Extensions to Group 14 (cost allocation Q14.4-14.5) and Group 16 (capacity planning Q16.5-16.6).
+
+### Comprehensive Coverage Discipline
+
+**The Existence Test**: For security (Group 31) and data lifecycle (Group 32), don't ask "should we do this?" Ask "show me the current state." If access controls or retention policies don't exist yet, that's the answer. The spec must define them.
 
 ---
 
@@ -173,7 +331,7 @@ Read the entire spec and ask: "Could a capable new hire with no context implemen
 
 If remaining items exist, loop back to the relevant phase. If ready, save the final version.
 
-For **split mode**: Remind the user which [OPEN] items need engineering input before the spec is execution-ready.
+For **PM-first** or **Eng-first** mode: Remind the user which `[OPEN]` items need the other role's input before the spec is execution-ready.
 
 ---
 
