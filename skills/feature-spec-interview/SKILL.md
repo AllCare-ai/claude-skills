@@ -46,8 +46,9 @@ Use AskUserQuestion to ask: **"What's your role in this interview?"**
 | **PM-first** | PM writes behavioral spec, Eng fills tech later | Ask `[PM]` and `[BOTH]` questions. Skip `[ENG]` questions. Mark skipped items `[OPEN — Engineering]`. |
 | **Eng-first** | Engineer fills tech decisions on an existing spec | Ask `[ENG]` and `[BOTH]` questions. Skip `[PM]` questions. Mark skipped items `[OPEN — PM]`. |
 | **Fill-gaps** | Complete a partially-written spec | Load existing spec. Show only `[OPEN]` items. User answers the unanswered questions. |
+| **Quick** | Simple structural steps, fast spec | Ask Groups 1-6 (behavioral core) + 31-32 (security, data lifecycle) only. Skip production bridge and remaining MECE groups. Mark skipped areas `[QUICK — expand with full interview if needed]`. |
 
-**Mode selection shortcut:** If the user says "solo" or "I'm doing everything," map to **All**. If they say "I'm the PM" or "product side," map to **PM-first**. If they say "engineering" or "tech decisions," map to **Eng-first**. If they reference an existing spec with gaps, map to **Fill-gaps**.
+**Mode selection shortcut:** If the user says "solo" or "I'm doing everything," map to **All**. If they say "I'm the PM" or "product side," map to **PM-first**. If they say "engineering" or "tech decisions," map to **Eng-first**. If they reference an existing spec with gaps, map to **Fill-gaps**. If they say "quick," "just the basics," or "simple step," map to **Quick**.
 
 ### Step 0.2 — Project Intake (first spec only)
 
@@ -56,9 +57,24 @@ If this is the first spec in a project, ask the three Phase 1 intake questions f
 2. Who executes: AI agents, human engineers, or both?
 3. Scope: full system or one step at a time?
 
-Store the answers. Reference them in every subsequent spec.
+Store the answers in `.spec-project-context.md` in the project root. This file is shared across team members so everyone skips intake after the first person completes it.
 
-If the user has already done project intake (previous specs exist), skip this step.
+**If `.spec-project-context.md` already exists**, read it and skip intake. Confirm with the user: "I found existing project context. Is this still current?" If yes, proceed. If no, re-interview and update the file.
+
+If the user has already done project intake in this session (previous specs exist), skip this step.
+
+#### .spec-project-context.md Format
+
+```markdown
+# Spec Project Context
+**Project:** [elevator pitch]
+**Executor:** [AI agents / human engineers / both]
+**Scope:** [full system / one step at a time]
+**Created by:** [name]
+**Date:** [date]
+**Decisions log:** [locked decisions from previous specs]
+**Corrections log:** [patterns from previous spec corrections]
+```
 
 ### Step 0.3 — Step Identification
 
@@ -81,6 +97,7 @@ Every question group in the question banks has a tag: `[PM]`, `[ENG]`, or `[BOTH
 - **PM-first mode**: Ask groups tagged `[PM]` or `[BOTH]`. For `[ENG]` groups, generate placeholder `[OPEN — Engineering]` items in the spec draft with a one-sentence description of what the engineer needs to decide.
 - **Eng-first mode**: Ask groups tagged `[ENG]` or `[BOTH]`. For `[PM]` groups, generate placeholder `[OPEN — PM]` items in the spec draft.
 - **Fill-gaps mode**: Parse the existing spec for `[OPEN]` markers. Present each as an interview question. After answering, remove the `[OPEN]` marker and write the answer into the spec.
+- **Quick mode**: Ask only Groups 1-6 and 31-32 (12 groups total). Skip Prompts 2-3 (even for judgment steps), Prompts 5-9, and Groups 33-40. Mark all skipped sections with `[QUICK — expand with full interview if needed]`. Use 7-section template format only.
 
 **Tag reference (Groups 1-30):**
 
@@ -111,6 +128,8 @@ Every question group in the question banks has a tag: `[PM]`, `[ENG]`, or `[BOTH
 | 33 Cross-Step Coordination | BOTH | 38 Deprecation & Migration | BOTH |
 | 34 Gradual Rollout | PM | 39 Documentation | ENG |
 | 35 Incident Response | ENG | 40 Data Quality | ENG |
+
+**When to use Quick mode:** Quick mode is for steps where the full 40-group interview is overkill. Good for: simple data transformations, CRUD operations, config steps, or early-stage specs that will be expanded later. Bad for: steps with AI judgment, external dependencies, or compliance requirements beyond basic security/data lifecycle.
 
 ---
 

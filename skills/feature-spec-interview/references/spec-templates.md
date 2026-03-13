@@ -263,10 +263,19 @@ If a constraint cannot be automatically verified, rewrite it until it can.
 
 ### [OPEN] Item Markers
 
-In **split mode** (PM + Engineering separate):
-- `[OPEN — Engineering]` for technology decisions PM cannot make
+In **PM-first mode**:
+- `[OPEN — Engineering]` for technology decisions skipped (ENG-tagged groups)
 - `[OPEN — PM + Engineering]` for joint decisions requiring both sides
-- `[OPEN — PM]` for product decisions not yet finalized
 
-In **solo mode** (one person does both):
+In **Eng-first mode**:
+- `[OPEN — PM]` for product decisions skipped (PM-tagged groups)
+- `[OPEN — PM + Engineering]` for joint decisions requiring both sides
+
+In **All mode**:
 - `[OPEN]` for any decision not yet made, with a note on what's needed to resolve it
+
+In **Quick mode**:
+- `[QUICK — expand with full interview if needed]` for all skipped sections (production bridge, MECE groups 33-40)
+
+In **Fill-gaps mode**:
+- No new markers. Parse existing `[OPEN]` items and resolve them via interview.

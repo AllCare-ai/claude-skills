@@ -14,6 +14,26 @@ TEMP_DIR=$(mktemp -d)
 cleanup() { rm -rf "$TEMP_DIR"; }
 trap cleanup EXIT
 
+# Version check mode
+if [ "${1:-}" = "--check" ]; then
+  echo "==> Checking for updates..."
+  INSTALLED_DIR="${SKILLS_DIR}/feature-spec-interview"
+  if [ ! -d "$INSTALLED_DIR" ]; then
+    echo "  feature-spec-interview is not installed. Run without --check to install."
+    exit 0
+  fi
+  # Compare file sizes as a simple version proxy
+  LOCAL_SIZE=$(wc -c < "${INSTALLED_DIR}/SKILL.md" 2>/dev/null || echo "0")
+  REMOTE_SIZE=$(curl -fsSL "https://raw.githubusercontent.com/${REPO}/${BRANCH}/skills/feature-spec-interview/SKILL.md" 2>/dev/null | wc -c || echo "0")
+  if [ "$LOCAL_SIZE" != "$REMOTE_SIZE" ]; then
+    echo "  Update available! Your SKILL.md is ${LOCAL_SIZE} bytes, latest is ${REMOTE_SIZE} bytes."
+    echo "  Run: curl -fsSL https://raw.githubusercontent.com/${REPO}/${BRANCH}/install.sh | bash"
+  else
+    echo "  You're up to date."
+  fi
+  exit 0
+fi
+
 echo "==> Downloading skills from github.com/${REPO}..."
 curl -fsSL "https://github.com/${REPO}/archive/refs/heads/${BRANCH}.tar.gz" | tar -xz -C "$TEMP_DIR"
 
