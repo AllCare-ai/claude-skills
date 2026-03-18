@@ -1,6 +1,6 @@
 # Claude Skills
 
-97 shareable skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Built and maintained by the [AllCare](https://allcare.ai) team.
+100 shareable skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Built and maintained by the [AllCare](https://allcare.ai) team.
 
 We use Claude Code across product, engineering, and design. These skills capture workflows we've battle-tested internally, plus community skills we've found useful.
 
@@ -137,6 +137,9 @@ Build AI features, MCP servers, and multi-agent systems.
 | `dispatching-parallel-agents` | Run 2+ independent tasks in parallel. |
 | `subagent-driven-development` | Execute plans with independent subagent tasks. |
 | `get-shit-done` | GSD meta-prompting: plan, execute, verify with context-rot prevention. |
+| `para-memory-files` | PARA-method file-based memory: knowledge graph, daily notes, tacit knowledge, memory decay. |
+| `agent-heartbeat-pattern` | Structured execution loop for agents that wake periodically. Checkout, incremental context, blocked-task dedup. |
+| `agent-token-optimization` | Reduce token consumption in agent systems. Four root causes and systematic fixes from 11K+ production runs. |
 
 ### 5. Mobile & Native
 
